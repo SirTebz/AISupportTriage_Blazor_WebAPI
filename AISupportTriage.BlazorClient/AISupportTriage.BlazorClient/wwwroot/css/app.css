@@ -1,0 +1,173 @@
+html, body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+/* Sidebar */
+.sidebar {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%);
+    min-height: 100vh;
+}
+
+    .sidebar .nav-link {
+        color: rgba(255, 255, 255, 0.8);
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin: 2px 8px;
+        text-decoration: none;
+        display: block;
+    }
+
+        .sidebar .nav-link:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 600;
+        }
+
+        .sidebar .nav-link .bi {
+            margin-right: 8px;
+        }
+
+.brand-title {
+    color: white;
+    font-size: 1.3rem;
+    font-weight: 700;
+    padding: 1.5rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 0.5rem;
+}
+
+/* Cards */
+.stat-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s;
+}
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+    }
+
+/* Table rows */
+.ticket-row:hover {
+    background-color: #f0f4ff;
+    cursor: pointer;
+}
+
+/* Priority left borders */
+.priority-critical {
+    border-left: 4px solid #dc3545 !important;
+}
+
+.priority-high {
+    border-left: 4px solid #fd7e14 !important;
+}
+
+.priority-medium {
+    border-left: 4px solid #ffc107 !important;
+}
+
+.priority-low {
+    border-left: 4px solid #28a745 !important;
+}
+
+/* AI badge */
+.badge-ai {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 20px;
+}
+
+/* SLA breached row */
+.sla-breached {
+    background-color: #fff5f5;
+}
+
+/* Message bubbles */
+.message-bubble {
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+}
+
+.message-user {
+    background: #e3f2fd;
+}
+
+.message-agent {
+    background: #f8f9fa;
+}
+
+.message-internal {
+    background: #fff3cd;
+    border: 1px dashed #ffc107;
+}
+
+.message-ai {
+    background: #f3e7ff;
+    border: 1px solid #c084fc;
+}
+
+/* Toast notification */
+.toast-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    min-width: 300px;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Auth pages */
+.auth-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.auth-bg {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}

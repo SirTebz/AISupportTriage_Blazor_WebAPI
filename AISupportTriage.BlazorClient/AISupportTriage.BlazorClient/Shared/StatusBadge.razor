@@ -1,0 +1,20 @@
+﻿@if (!string.IsNullOrEmpty(Status))
+{
+    <span class="badge @CssClass">@Status</span>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public string Status { get; set; } = string.Empty;
+
+    private string CssClass => Status switch
+    {
+        "Open" => "bg-primary",
+        "PendingAnalysis" => "bg-secondary",
+        "InProgress" => "bg-warning text-dark",
+        "WaitingOnCustomer" => "bg-info text-dark",
+        "Resolved" => "bg-success",
+        "Closed" => "bg-dark",
+        _ => "bg-light text-dark"
+    };
+}

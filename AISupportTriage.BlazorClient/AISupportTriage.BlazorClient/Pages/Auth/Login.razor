@@ -1,0 +1,92 @@
+﻿@page "/login"
+@layout EmptyLayout
+@inject AuthClientService AuthSvc
+@inject NavigationManager Nav
+
+<div class="auth-bg">
+    <div class="card auth-card" style="width:420px;">
+        <div class="card-body p-5">
+
+            <div class="text-center mb-4">
+                <div style="font-size:3rem;">🤖</div>
+                <h3 class="fw-bold mt-2">AI Support Triage</h3>
+                <p class="text-muted">Sign in to your account</p>
+            </div>
+
+            @if (!string.IsNullOrEmpty(_error))
+            {
+                <div class="alert alert-danger py-2 small">
+                    <i class="bi bi-exclamation-circle me-1"></i>@_error
+                </div>
+            }
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Email</label>
+                <input type="email"
+                       class="form-control form-control-lg"
+                       @bind="_model.Email"
+                       @bind:event="oninput"
+                       placeholder="you@company.com" />
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Password</label>
+                <input type="password"
+                       class="form-control form-control-lg"
+                       @bind="_model.Password"
+                       @bind:event="oninput"
+                       @onkeydown="OnKeyDown"
+                       placeholder="••••••••" />
+            </div>
+
+            <button class="btn btn-primary btn-lg w-100 mb-3"
+                    @onclick="HandleLoginAsync"
+                    disabled="@_loading">
+                @if (_loading)
+                {
+                    <span class="spinner-border spinner-border-sm me-2"
+                          role="status"></span>
+                }
+                Sign In
+            </button>
+
+            <div class="text-center mb-3">
+                <a href="/register" class="text-decoration-none small">
+                    Don't have an account? Register your company
+                </a>
+            </div>
+
+            <div class="alert alert-light border small text-center mb-0">
+                <strong>Demo:</strong> admin@acme.com / Admin@123
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly LoginRequest _model = new();
+    private string _error = string.Empty;
+    private bool _loading = false;
+
+    private async Task HandleLoginAsync()
+    {
+        _error = string.Empty;
+        _loading = true;
+
+        var (success, error) = await AuthSvc.LoginAsync(_model);
+
+        _loading = false;
+
+        if (success)
+            Nav.NavigateTo("/", replace: true);
+        else
+            _error = error ?? "Login failed.";
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await HandleLoginAsync();
+    }
+}

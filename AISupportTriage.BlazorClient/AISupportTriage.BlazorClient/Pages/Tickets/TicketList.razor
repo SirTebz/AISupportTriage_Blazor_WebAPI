@@ -1,0 +1,246 @@
+﻿@page "/tickets"
+@attribute [Authorize]
+@inject TicketApiService TicketApi
+@inject SignalRService   SignalR
+@inject NavigationManager Nav
+
+<PageTitle>Tickets — AI Support Triage</PageTitle>
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">
+            <i class="bi bi-ticket-detailed me-2 text-primary"></i>Support Tickets
+        </h4>
+        <p class="text-muted small mb-0">@_filtered.Count ticket(s) shown</p>
+    </div>
+    <a href="/tickets/create" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>New Ticket
+    </a>
+</div>
+
+<!-- Filter Bar -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body py-3">
+        <div class="row g-2">
+            <div class="col-md-4">
+                <input class="form-control form-control-sm"
+                       placeholder="Search by title or creator..."
+                       @bind="_search"
+                       @bind:event="oninput"
+                       @bind:oninput="ApplyFilter" /> @* altered *@
+            </div>
+            <div class="col-md-2">
+                <select class="form-select form-select-sm"
+                        @bind="_statusFilter"
+                        @bind:after="ApplyFilter">
+                    <option value="">All Status</option>
+                    <option value="Open">Open</option>
+                    <option value="PendingAnalysis">Pending AI</option>
+                    <option value="InProgress">In Progress</option>
+                    <option value="WaitingOnCustomer">Waiting</option>
+                    <option value="Resolved">Resolved</option>
+                    <option value="Closed">Closed</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select class="form-select form-select-sm"
+                        @bind="_priorityFilter"
+                        @bind:after="ApplyFilter">
+                    <option value="">All Priority</option>
+                    <option value="Critical">Critical</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select class="form-select form-select-sm"
+                        @bind="_categoryFilter"
+                        @bind:after="ApplyFilter">
+                    <option value="">All Categories</option>
+                    <option value="Technical">Technical</option>
+                    <option value="Billing">Billing</option>
+                    <option value="Security">Security</option>
+                    <option value="Sales">Sales</option>
+                    <option value="General">General</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary btn-sm w-100"
+                        @onclick="ClearFilters">
+                    <i class="bi bi-x-circle me-1"></i>Clear
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (_loading)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+}
+else if (!_filtered.Any())
+{
+    <div class="text-center py-5 text-muted">
+        <i class="bi bi-inbox fs-1 d-block mb-3 text-secondary"></i>
+        <h5>No tickets found</h5>
+        <p class="small">Try adjusting your filters or submit a new ticket.</p>
+        <a href="/tickets/create" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>Submit First Ticket
+        </a>
+    </div>
+}
+else
+{
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Category</th>
+                        <th>Assigned To</th>
+                        <th>SLA</th>
+                        <th>Created</th>
+                        <th class="text-center">AI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in _filtered)
+                    {
+                        <tr class="ticket-row @(t.SlaBreached ? "sla-breached" : "")
+                                             priority-@t.Priority.ToLowerInvariant()"
+                            @onclick="() => GoToTicket(t.Id)">
+                            <td>
+                                <div class="fw-semibold">@t.Title</div>
+                                <div class="text-muted" style="font-size:12px;">
+                                    @t.CreatedByName
+                                </div>
+                            </td>
+                            <td><StatusBadge Status="@t.Status" /></td>
+                            <td><PriorityBadge Priority="@t.Priority" /></td>
+                            <td>
+                                <span class="badge bg-light text-dark border">
+                                    @t.Category
+                                </span>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(t.AssignedAgentName))
+                                {
+                                    <span class="small">@t.AssignedAgentName</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">Unassigned</span>
+                                }
+                            </td>
+                            <td>
+                                @if (t.SlaBreached)
+                                {
+                                    <span class="badge bg-danger">BREACHED</span>
+                                }
+                                else if (t.SLADeadline.HasValue)
+                                {
+                                    var remaining = t.SLADeadline.Value - DateTime.UtcNow;
+                                    var urgent    = remaining.TotalHours < 2;
+                                    <span class="small @(urgent ? "text-danger fw-bold" : "text-muted")">
+                                        @(remaining.TotalHours > 0
+                                            ? $"{(int)remaining.TotalHours}h {remaining.Minutes}m"
+                                            : "Expired")
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">—</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="small text-muted">
+                                    @t.CreatedAt.ToString("MMM dd")
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                @if (t.AiAnalysisComplete)
+                                {
+                                    <span class="badge-ai">
+                                        <i class="bi bi-robot"></i>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">
+                                        <i class="bi bi-hourglass-split"></i>
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@code {
+    private List<TicketListItem> _all      = new();
+    private List<TicketListItem> _filtered = new();
+    private bool   _loading        = true;
+    private string _search         = string.Empty;
+    private string _statusFilter   = string.Empty;
+    private string _priorityFilter = string.Empty;
+    private string _categoryFilter = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        SignalR.OnTicketCreated += async (_, _) => await RefreshAsync();
+        SignalR.OnTicketUpdated += async _      => await RefreshAsync();
+        await LoadAsync();
+    }
+
+    private async Task RefreshAsync()
+    {
+        await LoadAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        StateHasChanged();
+        _all     = await TicketApi.GetTicketsAsync();
+        ApplyFilter();
+        _loading = false;
+    }
+
+    private void ApplyFilter()
+    {
+        _filtered = _all.Where(t =>
+        {
+            var matchSearch   = string.IsNullOrEmpty(_search)
+                || t.Title.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                || t.CreatedByName.Contains(_search, StringComparison.OrdinalIgnoreCase);
+
+            var matchStatus   = string.IsNullOrEmpty(_statusFilter)   || t.Status   == _statusFilter;
+            var matchPriority = string.IsNullOrEmpty(_priorityFilter)  || t.Priority == _priorityFilter;
+            var matchCategory = string.IsNullOrEmpty(_categoryFilter)  || t.Category == _categoryFilter;
+
+            return matchSearch && matchStatus && matchPriority && matchCategory;
+        }).ToList();
+    }
+
+    private void ClearFilters()
+    {
+        _search         = string.Empty;
+        _statusFilter   = string.Empty;
+        _priorityFilter = string.Empty;
+        _categoryFilter = string.Empty;
+        ApplyFilter();
+    }
+
+    private void GoToTicket(Guid id) =>
+        Nav.NavigateTo($"/tickets/{id}");
+}

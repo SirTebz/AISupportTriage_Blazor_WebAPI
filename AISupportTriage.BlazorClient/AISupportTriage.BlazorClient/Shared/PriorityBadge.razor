@@ -1,0 +1,18 @@
+﻿@if (!string.IsNullOrEmpty(Priority))
+{
+    <span class="badge @CssClass">@Priority</span>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public string Priority { get; set; } = string.Empty;
+
+    private string CssClass => Priority switch
+    {
+        "Critical" => "bg-danger",
+        "High" => "bg-orange text-white",
+        "Medium" => "bg-warning text-dark",
+        "Low" => "bg-success",
+        _ => "bg-light text-dark"
+    };
+}

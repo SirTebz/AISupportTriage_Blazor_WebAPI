@@ -1,0 +1,92 @@
+﻿@inject AuthClientService AuthSvc
+@inject SignalRService SignalR
+@inject NavigationManager Nav
+
+<div class="sidebar d-flex flex-column" style="width:260px;min-width:260px;">
+
+    <div class="brand-title">
+        <i class="bi bi-robot me-2"></i>AI Triage
+    </div>
+
+    <nav class="flex-grow-1 py-2">
+        <ul class="nav flex-column px-2" style="list-style:none;padding-left:0;">
+            <li>
+                <a class="nav-link @ActiveClass("/")"
+                   href="/">
+                    <i class="bi bi-speedometer2"></i>Dashboard
+                </a>
+            </li>
+            <li>
+                <a class="nav-link @ActiveClass("/tickets")"
+                   href="/tickets">
+                    <i class="bi bi-ticket-detailed"></i>All Tickets
+                </a>
+            </li>
+            <li>
+                <a class="nav-link @ActiveClass("/tickets/create")"
+                   href="/tickets/create">
+                    <i class="bi bi-plus-circle"></i>New Ticket
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="p-3" style="border-top:1px solid rgba(255,255,255,0.15);">
+        <AuthorizeView>
+            <Authorized>
+                <div class="mb-2 d-flex align-items-center gap-2">
+                    <div class="rounded-circle bg-white text-primary d-flex align-items-center
+                                justify-content-center fw-bold"
+                         style="width:34px;height:34px;font-size:14px;flex-shrink:0;">
+                        @GetInitial(context)
+                    </div>
+                    <div style="font-size:12px;">
+                        <div class="text-white fw-semibold">
+                            @GetName(context)
+                        </div>
+                        <div style="color:rgba(255,255,255,0.6);">
+                            @GetRole(context)
+                        </div>
+                    </div>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="badge @(SignalR.IsConnected ? "bg-success" : "bg-secondary")"
+                  style="font-size:10px;">
+                ● @(SignalR.IsConnected ? "Live" : "Offline")
+            </span>
+        </div>
+
+        <button class="btn btn-sm btn-outline-light w-100" @onclick="LogoutAsync">
+            <i class="bi bi-box-arrow-left me-1"></i>Sign Out
+        </button>
+    </div>
+</div>
+
+@code {
+    private string ActiveClass(string path)
+    {
+        var uri = Nav.Uri;
+        if (path == "/")
+            return uri.EndsWith("/") || uri.EndsWith("/dashboard") ? "active" : "";
+        return uri.Contains(path, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+    }
+
+    private static string GetInitial(AuthenticationState ctx)
+        => ctx.User.Identity?.Name?.FirstOrDefault().ToString() ?? "?";
+
+    private static string GetName(AuthenticationState ctx)
+        => ctx.User.Identity?.Name ?? "User";
+
+    private static string GetRole(AuthenticationState ctx)
+        => ctx.User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+
+    private async Task LogoutAsync()
+    {
+        await SignalR.StopAsync();
+        await AuthSvc.LogoutAsync();
+        Nav.NavigateTo("/login", forceLoad: true);
+    }
+}
