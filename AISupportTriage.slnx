@@ -1,7 +1,8 @@
 <Solution>
   <Project Path="AISupportTriage.API/AISupportTriage.API.csproj" />
   <Project Path="AISupportTriage.Application/AISupportTriage.Application.csproj" />
-  <Project Path="AISupportTriage.BlazorClient/AISupportTriage.BlazorClient/AISupportTriage.BlazorClient.csproj" />
+  <Project Path="AISupportTriage.BlazorClient/AISupportTriage.BlazorClient.Client/AISupportTriage.BlazorClient.Client.csproj" Id="2d5cc1b2-9544-4444-b7c1-890bd562e6a6" />
+  <Project Path="AISupportTriage.BlazorClient/AISupportTriage.BlazorClient/AISupportTriage.BlazorClient.csproj" Id="bfed2b44-c29e-4ec9-aa5c-22b00b7d40d7" />
   <Project Path="AISupportTriage.Domain/AISupportTriage.Domain.csproj" />
   <Project Path="AISupportTriage.Infrastructure/AISupportTriage.Infrastructure.csproj" />
 </Solution>

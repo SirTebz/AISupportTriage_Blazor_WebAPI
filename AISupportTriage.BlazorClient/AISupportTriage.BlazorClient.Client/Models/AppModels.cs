@@ -1,4 +1,4 @@
-﻿namespace AISupportTriage.BlazorClient.Models;
+﻿namespace AISupportTriage.BlazorClient.Client.Models;
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
@@ -67,8 +67,8 @@ public class TicketListItem
     public bool AiAnalysisComplete { get; set; }
 }
 
-// ── Ticket Detail — renamed to TicketDetailDto to avoid clash with ────────────
-// ── the Razor page class auto-generated from TicketDetail.razor      ────────────
+// ── Ticket Detail ─────────────────────────────────────────────────────────────
+// Named TicketDetailDto to avoid clash with the Razor page class TicketDetail
 
 public class TicketDetailDto
 {

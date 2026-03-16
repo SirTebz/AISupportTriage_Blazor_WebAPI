@@ -10,8 +10,8 @@
     private string CssClass => Priority switch
     {
         "Critical" => "bg-danger",
-        "High" => "bg-orange text-white",
-        "Medium" => "bg-warning text-dark",
+        "High" => "bg-warning text-dark",
+        "Medium" => "bg-info text-dark",
         "Low" => "bg-success",
         _ => "bg-light text-dark"
     };

@@ -1,23 +1,23 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using AISupportTriage.BlazorClient.Services;
+using AISupportTriage.BlazorClient.Client.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 
-namespace AISupportTriage.BlazorClient.Auth;
+namespace AISupportTriage.BlazorClient.Client.Auth;
 
 public class CustomAuthStateProvider : AuthenticationStateProvider
 {
     private readonly LocalStorageService _storage;
-    private readonly HttpClient _httpClient;
+    private readonly HttpClient _http;
     private const string TokenKey = "auth_token";
 
     private static readonly AuthenticationState Anonymous =
         new(new ClaimsPrincipal(new ClaimsIdentity()));
 
-    public CustomAuthStateProvider(LocalStorageService storage, HttpClient httpClient)
+    public CustomAuthStateProvider(LocalStorageService storage, HttpClient http)
     {
         _storage = storage;
-        _httpClient = httpClient;
+        _http = http;
     }
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -34,11 +34,11 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
 
             if (jwt.ValidTo < DateTime.UtcNow)
             {
-                await ClearTokenAsync();
+                await ClearAsync();
                 return Anonymous;
             }
 
-            SetAuthHeader(token);
+            SetHeader(token);
 
             var identity = new ClaimsIdentity(jwt.Claims, "jwt");
             return new AuthenticationState(new ClaimsPrincipal(identity));
@@ -52,35 +52,35 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
     public async Task MarkAuthenticatedAsync(string token)
     {
         await _storage.SetAsync(TokenKey, token);
-        SetAuthHeader(token);
+        SetHeader(token);
 
         var handler = new JwtSecurityTokenHandler();
         var jwt = handler.ReadJwtToken(token);
         var identity = new ClaimsIdentity(jwt.Claims, "jwt");
-        var user = new ClaimsPrincipal(identity);
 
         NotifyAuthenticationStateChanged(
-            Task.FromResult(new AuthenticationState(user)));
+            Task.FromResult(
+                new AuthenticationState(new ClaimsPrincipal(identity))));
     }
 
     public async Task MarkLoggedOutAsync()
     {
-        await ClearTokenAsync();
+        await ClearAsync();
         NotifyAuthenticationStateChanged(Task.FromResult(Anonymous));
     }
 
     public async Task<string?> GetTokenAsync()
         => await _storage.GetAsync(TokenKey);
 
-    private void SetAuthHeader(string token)
+    private void SetHeader(string token)
     {
-        _httpClient.DefaultRequestHeaders.Authorization =
+        _http.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
     }
 
-    private async Task ClearTokenAsync()
+    private async Task ClearAsync()
     {
         await _storage.RemoveAsync(TokenKey);
-        _httpClient.DefaultRequestHeaders.Authorization = null;
+        _http.DefaultRequestHeaders.Authorization = null;
     }
 }

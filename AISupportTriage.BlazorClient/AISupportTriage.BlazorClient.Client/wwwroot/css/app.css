@@ -1,11 +1,11 @@
-html, body {
+﻿html, body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 -1px 2px rgba(0,0,0,0.2);
     display: none;
     left: 0;
     padding: 0.6rem 1.25rem 0.7rem 1.25rem;
@@ -21,14 +21,13 @@ html, body {
         top: 0.5rem;
     }
 
-/* Sidebar */
 .sidebar {
     background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%);
     min-height: 100vh;
 }
 
     .sidebar .nav-link {
-        color: rgba(255, 255, 255, 0.8);
+        color: rgba(255,255,255,0.8);
         padding: 0.75rem 1rem;
         border-radius: 8px;
         margin: 2px 8px;
@@ -36,13 +35,9 @@ html, body {
         display: block;
     }
 
-        .sidebar .nav-link:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-        }
-
+        .sidebar .nav-link:hover,
         .sidebar .nav-link.active {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255,255,255,0.2);
             color: white;
             font-weight: 600;
         }
@@ -56,15 +51,14 @@ html, body {
     font-size: 1.3rem;
     font-weight: 700;
     padding: 1.5rem 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
     margin-bottom: 0.5rem;
 }
 
-/* Cards */
 .stat-card {
     border: none;
     border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
     transition: transform 0.2s;
 }
 
@@ -72,13 +66,11 @@ html, body {
         transform: translateY(-2px);
     }
 
-/* Table rows */
 .ticket-row:hover {
     background-color: #f0f4ff;
     cursor: pointer;
 }
 
-/* Priority left borders */
 .priority-critical {
     border-left: 4px solid #dc3545 !important;
 }
@@ -95,21 +87,19 @@ html, body {
     border-left: 4px solid #28a745 !important;
 }
 
-/* AI badge */
 .badge-ai {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     font-size: 0.75rem;
     padding: 3px 8px;
     border-radius: 20px;
+    display: inline-block;
 }
 
-/* SLA breached row */
 .sla-breached {
     background-color: #fff5f5;
 }
 
-/* Message bubbles */
 .message-bubble {
     border-radius: 12px;
     padding: 10px 14px;
@@ -134,7 +124,6 @@ html, body {
     border: 1px solid #c084fc;
 }
 
-/* Toast notification */
 .toast-notification {
     position: fixed;
     top: 20px;
@@ -156,13 +145,6 @@ html, body {
     }
 }
 
-/* Auth pages */
-.auth-card {
-    border: none;
-    border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
 .auth-bg {
     background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%);
     min-height: 100vh;
@@ -170,4 +152,10 @@ html, body {
     align-items: center;
     justify-content: center;
     padding: 2rem;
+}
+
+.auth-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }

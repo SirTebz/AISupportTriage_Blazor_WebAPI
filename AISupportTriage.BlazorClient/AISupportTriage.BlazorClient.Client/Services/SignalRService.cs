@@ -1,12 +1,12 @@
-﻿using AISupportTriage.BlazorClient.Auth;
+﻿using AISupportTriage.BlazorClient.Client.Auth;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Configuration;
 
-namespace AISupportTriage.BlazorClient.Services;
+namespace AISupportTriage.BlazorClient.Client.Services;
 
 public class SignalRService : IAsyncDisposable
 {
-    private readonly CustomAuthStateProvider _authProvider;
+    private readonly CustomAuthStateProvider _auth;
     private readonly string _apiBaseUrl;
     private HubConnection? _hub;
 
@@ -18,9 +18,9 @@ public class SignalRService : IAsyncDisposable
     public bool IsConnected =>
         _hub?.State == HubConnectionState.Connected;
 
-    public SignalRService(CustomAuthStateProvider authProvider, IConfiguration config)
+    public SignalRService(CustomAuthStateProvider auth, IConfiguration config)
     {
-        _authProvider = authProvider;
+        _auth = auth;
         _apiBaseUrl = config["ApiBaseUrl"] ?? "https://localhost:7100";
     }
 
@@ -28,7 +28,7 @@ public class SignalRService : IAsyncDisposable
     {
         if (_hub != null) return;
 
-        var token = await _authProvider.GetTokenAsync();
+        var token = await _auth.GetTokenAsync();
 
         _hub = new HubConnectionBuilder()
             .WithUrl($"{_apiBaseUrl}/hubs/tickets", options =>
@@ -52,7 +52,7 @@ public class SignalRService : IAsyncDisposable
             ids => OnSlaWarning?.Invoke(ids));
 
         try { await _hub.StartAsync(); }
-        catch { /* SignalR is optional — app still works without it */ }
+        catch { /* SignalR failure won't break the app */ }
     }
 
     public async Task StopAsync()

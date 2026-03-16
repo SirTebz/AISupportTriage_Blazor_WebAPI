@@ -3,10 +3,9 @@
 
 <AuthorizeView>
     <Authorized>
+
         <div class="d-flex" style="min-height:100vh;">
-
             <NavMenu />
-
             <div class="flex-grow-1 overflow-auto" style="background:#f5f7fb;">
                 <main class="p-4">
                     @Body
@@ -19,19 +18,18 @@
             <div class="toast-notification alert alert-info alert-dismissible shadow mb-0"
                  role="alert">
                 <i class="bi bi-bell-fill me-2"></i>@_toastMessage
-                <button type="button" class="btn-close"
-                        @onclick="DismissToast"></button>
+                <button type="button" class="btn-close" @onclick="DismissToast"></button>
             </div>
         }
-    </Authorized>
 
+    </Authorized>
     <NotAuthorized>
         @Body
     </NotAuthorized>
 </AuthorizeView>
 
 @code {
-    private bool _showToast = false;
+    private bool   _showToast    = false;
     private string _toastMessage = string.Empty;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -41,21 +39,19 @@
         try
         {
             SignalR.OnTicketCreated += HandleTicketCreated;
-            SignalR.OnSlaWarning += HandleSlaWarning;
+            SignalR.OnSlaWarning    += HandleSlaWarning;
             await SignalR.StartAsync();
             StateHasChanged();
         }
-        catch
-        {
-            // SignalR failing doesn't break the app
-        }
+        catch { /* SignalR failure is non-fatal */ }
     }
 
     private void HandleTicketCreated(string id, string title)
     {
-        _toastMessage = $"New ticket submitted: {title}";
-        _showToast = true;
+        _toastMessage = $"New ticket: {title}";
+        _showToast    = true;
         InvokeAsync(StateHasChanged);
+
         Task.Delay(6000).ContinueWith(_ =>
         {
             _showToast = false;
@@ -66,7 +62,7 @@
     private void HandleSlaWarning(string[] ids)
     {
         _toastMessage = $"⚠️ {ids.Length} SLA breach(es) detected!";
-        _showToast = true;
+        _showToast    = true;
         InvokeAsync(StateHasChanged);
     }
 

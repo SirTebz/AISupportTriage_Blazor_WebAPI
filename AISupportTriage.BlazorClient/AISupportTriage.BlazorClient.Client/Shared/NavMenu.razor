@@ -1,0 +1,81 @@
+﻿@inject AuthClientService AuthSvc
+@inject SignalRService SignalR
+@inject NavigationManager Nav
+
+<div class="sidebar d-flex flex-column" style="width:260px; min-width:260px;">
+
+    <div class="brand-title">
+        <i class="bi bi-robot me-2"></i>AI Triage
+    </div>
+
+    <nav class="flex-grow-1 py-2">
+        <ul class="nav flex-column px-2" style="list-style:none; padding-left:0;">
+            <li>
+                <a href="/" class="nav-link @IsActive("/")">
+                    <i class="bi bi-speedometer2"></i>Dashboard
+                </a>
+            </li>
+            <li>
+                <a href="/tickets" class="nav-link @IsActive("/tickets")">
+                    <i class="bi bi-ticket-detailed"></i>All Tickets
+                </a>
+            </li>
+            <li>
+                <a href="/tickets/create" class="nav-link @IsActive("/tickets/create")">
+                    <i class="bi bi-plus-circle"></i>New Ticket
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="p-3" style="border-top: 1px solid rgba(255,255,255,0.15);">
+
+        <!-- FIX: added Context="authState" so the variable name is explicit -->
+        <AuthorizeView Context="authState">
+            <Authorized>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="rounded-circle bg-white text-primary fw-bold
+                        d-flex align-items-center justify-content-center"
+                         style="width:34px; height:34px; font-size:14px; flex-shrink:0;">
+                        @(authState.User.Identity?.Name?.FirstOrDefault().ToString() ?? "?")
+                    </div>
+                    <div style="font-size:12px; overflow:hidden;">
+                        <div class="text-white fw-semibold text-truncate">
+                            @authState.User.Identity?.Name
+                        </div>
+                        <div style="color:rgba(255,255,255,0.6);">
+                            @authState.User.FindFirst(ClaimTypes.Role)?.Value
+                        </div>
+                    </div>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+        <div class="mb-2">
+            <span class="badge @(SignalR.IsConnected ? "bg-success" : "bg-secondary")"
+                  style="font-size:10px;">
+                ● @(SignalR.IsConnected ? "Live" : "Offline")
+            </span>
+        </div>
+
+        <button class="btn btn-sm btn-outline-light w-100" @onclick="LogoutAsync">
+            <i class="bi bi-box-arrow-left me-1"></i>Sign Out
+        </button>
+    </div>
+</div>
+
+@code {
+    private string IsActive(string path)
+    {
+        if (path == "/")
+            return Nav.Uri.EndsWith("/") ? "active" : "";
+        return Nav.Uri.Contains(path, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+    }
+
+    private async Task LogoutAsync()
+    {
+        await SignalR.StopAsync();
+        await AuthSvc.LogoutAsync();
+        Nav.NavigateTo("/login", forceLoad: true);
+    }
+}

@@ -1,11 +1,7 @@
 ﻿using Microsoft.JSInterop;
 
-namespace AISupportTriage.BlazorClient.Services;
+namespace AISupportTriage.BlazorClient.Client.Services;
 
-/// <summary>
-/// Wraps browser localStorage via JSInterop.
-/// No NuGet package required.
-/// </summary>
 public class LocalStorageService
 {
     private readonly IJSRuntime _js;
@@ -33,7 +29,7 @@ public class LocalStorageService
         {
             await _js.InvokeVoidAsync("localStorage.setItem", key, value);
         }
-        catch { /* ignore */ }
+        catch { }
     }
 
     public async Task RemoveAsync(string key)
@@ -42,6 +38,6 @@ public class LocalStorageService
         {
             await _js.InvokeVoidAsync("localStorage.removeItem", key);
         }
-        catch { /* ignore */ }
+        catch { }
     }
 }

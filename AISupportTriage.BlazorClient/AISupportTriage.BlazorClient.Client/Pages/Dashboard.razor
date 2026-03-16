@@ -11,9 +11,9 @@
         <h4 class="fw-bold mb-1">
             <i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard
         </h4>
-        <p class="text-muted mb-0 small">Real-time support operations overview</p>
+        <p class="text-muted small mb-0">Real-time support operations overview</p>
     </div>
-    <button class="btn btn-outline-primary btn-sm" @onclick="LoadDataAsync">
+    <button class="btn btn-outline-primary btn-sm" @onclick="LoadAsync">
         <i class="bi bi-arrow-clockwise me-1"></i>Refresh
     </button>
 </div>
@@ -22,10 +22,9 @@
 {
     <div class="text-center py-5">
         <div class="spinner-border text-primary" role="status"></div>
-        <p class="mt-2 text-muted small">Loading analytics...</p>
     </div>
 }
-else if (_analytics == null)
+else if (_data == null)
 {
     <div class="alert alert-warning">
         <i class="bi bi-exclamation-triangle me-2"></i>
@@ -34,7 +33,6 @@ else if (_analytics == null)
 }
 else
 {
-    <!-- Stat Cards -->
     <div class="row g-3 mb-4">
         <div class="col-sm-6 col-xl-3">
             <div class="card stat-card h-100">
@@ -42,7 +40,7 @@ else
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
                             <p class="text-muted small mb-1">Total Tickets</p>
-                            <h3 class="fw-bold mb-0">@_analytics.TotalTickets</h3>
+                            <h3 class="fw-bold mb-0">@_data.TotalTickets</h3>
                         </div>
                         <div class="p-2 rounded-3 bg-primary bg-opacity-10">
                             <i class="bi bi-ticket-detailed text-primary fs-4"></i>
@@ -57,7 +55,7 @@ else
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
                             <p class="text-muted small mb-1">Open Tickets</p>
-                            <h3 class="fw-bold mb-0 text-warning">@_analytics.OpenTickets</h3>
+                            <h3 class="fw-bold mb-0 text-warning">@_data.OpenTickets</h3>
                         </div>
                         <div class="p-2 rounded-3 bg-warning bg-opacity-10">
                             <i class="bi bi-hourglass-split text-warning fs-4"></i>
@@ -72,7 +70,7 @@ else
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
                             <p class="text-muted small mb-1">Resolved</p>
-                            <h3 class="fw-bold mb-0 text-success">@_analytics.ResolvedTickets</h3>
+                            <h3 class="fw-bold mb-0 text-success">@_data.ResolvedTickets</h3>
                         </div>
                         <div class="p-2 rounded-3 bg-success bg-opacity-10">
                             <i class="bi bi-check-circle text-success fs-4"></i>
@@ -87,7 +85,7 @@ else
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
                             <p class="text-muted small mb-1">SLA Breached</p>
-                            <h3 class="fw-bold mb-0 text-danger">@_analytics.SlaBreachedTickets</h3>
+                            <h3 class="fw-bold mb-0 text-danger">@_data.SlaBreachedTickets</h3>
                         </div>
                         <div class="p-2 rounded-3 bg-danger bg-opacity-10">
                             <i class="bi bi-exclamation-triangle text-danger fs-4"></i>
@@ -99,7 +97,6 @@ else
     </div>
 
     <div class="row g-3 mb-4">
-        <!-- Categories -->
         <div class="col-md-6">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
@@ -107,16 +104,15 @@ else
                         <i class="bi bi-pie-chart me-2 text-primary"></i>
                         Tickets by Category
                     </h6>
-                    @if (!_analytics.TicketsByCategory.Any())
+                    @if (!_data.TicketsByCategory.Any())
                     {
                         <p class="text-muted small">No data yet.</p>
                     }
-                    @foreach (var cat in _analytics.TicketsByCategory
-                                    .OrderByDescending(c => c.Count))
+                    @foreach (var cat in _data.TicketsByCategory.OrderByDescending(c => c.Count))
                     {
-                        var pct = _analytics.TotalTickets > 0
-                        ? (int)(cat.Count * 100.0 / _analytics.TotalTickets)
-                        : 0;
+                        var pct = _data.TotalTickets > 0
+                            ? (int)(cat.Count * 100.0 / _data.TotalTickets)
+                            : 0;
                         <div class="mb-2">
                             <div class="d-flex justify-content-between small mb-1">
                                 <span>@cat.Category</span>
@@ -132,7 +128,6 @@ else
             </div>
         </div>
 
-        <!-- Agent Workloads -->
         <div class="col-md-6">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
@@ -140,15 +135,15 @@ else
                         <i class="bi bi-people me-2 text-success"></i>
                         Agent Workloads
                     </h6>
-                    @if (!_analytics.AgentWorkloads.Any())
+                    @if (!_data.AgentWorkloads.Any())
                     {
                         <p class="text-muted small">No agents assigned yet.</p>
                     }
-                    @foreach (var agent in _analytics.AgentWorkloads)
+                    @foreach (var agent in _data.AgentWorkloads)
                     {
                         <div class="d-flex align-items-center mb-2 p-2 rounded bg-light">
-                            <div class="rounded-circle bg-primary text-white d-flex
-                                                align-items-center justify-content-center me-3 fw-bold"
+                            <div class="rounded-circle bg-primary text-white fw-bold
+                                d-flex align-items-center justify-content-center me-3"
                                  style="width:36px;height:36px;font-size:13px;flex-shrink:0;">
                                 @agent.AgentName.FirstOrDefault()
                             </div>
@@ -168,40 +163,41 @@ else
         </div>
     </div>
 
-    <!-- Avg Resolution -->
     <div class="card border-0 shadow-sm">
         <div class="card-body d-flex align-items-center gap-3">
             <i class="bi bi-clock-history fs-3 text-primary"></i>
             <div>
                 <p class="text-muted small mb-0">Average Resolution Time</p>
-                <h5 class="fw-bold mb-0">@_analytics.AverageResolutionHours.ToString("F1") hours</h5>
+                <h5 class="fw-bold mb-0">
+                    @_data.AverageResolutionHours.ToString("F1") hours
+                </h5>
             </div>
         </div>
     </div>
 }
 
 @code {
-    private AnalyticsSummary? _analytics;
+    private AnalyticsSummary? _data = null;
     private bool _loading = true;
 
     protected override async Task OnInitializedAsync()
     {
         SignalR.OnTicketCreated += async (_, _) => await RefreshAsync();
         SignalR.OnTicketUpdated += async _ => await RefreshAsync();
-        await LoadDataAsync();
+        await LoadAsync();
     }
 
     private async Task RefreshAsync()
     {
-        await LoadDataAsync();
+        await LoadAsync();
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task LoadDataAsync()
+    private async Task LoadAsync()
     {
         _loading = true;
         StateHasChanged();
-        _analytics = await TicketApi.GetAnalyticsAsync();
+        _data = await TicketApi.GetAnalyticsAsync();
         _loading = false;
         StateHasChanged();
     }

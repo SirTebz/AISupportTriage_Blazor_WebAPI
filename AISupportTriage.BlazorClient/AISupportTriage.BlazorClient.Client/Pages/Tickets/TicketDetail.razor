@@ -1,10 +1,10 @@
 ﻿@page "/tickets/{Id:guid}"
 @attribute [Authorize]
-@inject TicketApiService TicketApi
-@inject SignalRService SignalR
+@inject TicketApiService  TicketApi
+@inject SignalRService    SignalR
 @inject NavigationManager Nav
 
-<PageTitle>Ticket Detail — AI Support Triage</PageTitle>
+<PageTitle>Ticket — AI Support Triage</PageTitle>
 
 @if (_loading)
 {
@@ -30,16 +30,16 @@ else
 
     <div class="row g-3">
 
-        <!-- ── Left Column ─────────────────────────────── -->
+        <!-- Left Column -->
         <div class="col-lg-8">
 
-            <!-- Header -->
             <div class="card border-0 shadow-sm mb-3">
                 <div class="card-body">
-                    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+                    <div class="d-flex align-items-start justify-content-between
+                                flex-wrap gap-2 mb-3">
                         <h5 class="fw-bold mb-0">@_ticket.Title</h5>
                         <div class="d-flex gap-2 flex-wrap">
-                            <StatusBadge Status="@_ticket.Status" />
+                            <StatusBadge   Status="@_ticket.Status" />
                             <PriorityBadge Priority="@_ticket.Priority" />
                         </div>
                     </div>
@@ -53,32 +53,32 @@ else
                 </div>
             </div>
 
-            <!-- Conversation -->
             <div class="card border-0 shadow-sm mb-3">
                 <div class="card-body">
                     <h6 class="fw-bold mb-3">
-                        <i class="bi bi-chat-left-dots me-2 text-primary"></i>Conversation
+                        <i class="bi bi-chat-left-dots me-2 text-primary"></i>
+                        Conversation
                     </h6>
 
                     @if (!_ticket.Messages.Any())
                     {
                         <p class="text-muted small text-center py-3">
-                            No messages yet. Be the first to reply.
+                            No messages yet.
                         </p>
                     }
 
                     @foreach (var msg in _ticket.Messages)
                     {
-                        var isAiMsg = msg.SenderId == "System"
-                        || msg.Content.StartsWith("[AI");
-                        var cssClass = isAiMsg ? "message-ai"
-                        : msg.IsInternal ? "message-internal"
-                        : msg.SenderId == _ticket.CreatedById
-                        ? "message-user"
-                        : "message-agent";
-                        <div class="message-bubble @cssClass mb-3">
+                        var isAi     = msg.SenderId == "System"
+                                    || msg.Content.StartsWith("[AI");
+                        var cssClass = isAi            ? "message-ai"
+                                     : msg.IsInternal  ? "message-internal"
+                                     : msg.SenderId == _ticket.CreatedById
+                                                        ? "message-user"
+                                                        : "message-agent";
+                        <div class="message-bubble @cssClass">
                             <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                                @if (isAiMsg)
+                                @if (isAi)
                                 {
                                     <span class="badge-ai">
                                         <i class="bi bi-robot me-1"></i>AI Suggestion
@@ -93,36 +93,40 @@ else
                                               style="font-size:10px;">Internal</span>
                                     }
                                 }
-                            <span class="text-muted ms-auto" style="font-size:11px;">
-                                @msg.CreatedAt.ToString("MMM dd, HH:mm")
-                            </span>
-                        </div>
-                        <div style="white-space:pre-wrap;font-size:14px;">
-                            @(isAiMsg
-                                                    ? msg.Content.Replace("[AI Suggestion] ", "")
-                                                    : msg.Content)
+                                <span class="text-muted ms-auto" style="font-size:11px;">
+                                    @msg.CreatedAt.ToString("MMM dd, HH:mm")
+                                </span>
+                            </div>
+                            <div style="white-space:pre-wrap; font-size:14px;">
+                                @(isAi
+                                    ? msg.Content.Replace("[AI Suggestion] ", "")
+                                    : msg.Content)
                             </div>
                         </div>
                     }
 
-                    <!-- Reply box -->
                     @if (!string.IsNullOrEmpty(_replyError))
                     {
-                        <div class="alert alert-danger py-2 small">@_replyError</div>
+                        <div class="alert alert-danger py-2 small mt-2">
+                            @_replyError
+                        </div>
                     }
 
-                    <div class="border-top pt-3 mt-2">
+                    <div class="border-top pt-3 mt-3">
                         <textarea class="form-control mb-2"
                                   rows="3"
                                   @bind="_replyContent"
                                   @bind:event="oninput"
                                   placeholder="Type your reply..."></textarea>
-                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center
+                                    justify-content-between flex-wrap gap-2">
                             <div class="form-check mb-0">
-                                <input class="form-check-input" type="checkbox"
-                                       id="internalNote"
-                                       @bind="_isInternalNote" />
-                                <label class="form-check-label small" for="internalNote">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       id="chkInternal"
+                                       @bind="_isInternal" />
+                                <label class="form-check-label small"
+                                       for="chkInternal">
                                     Internal note (agents only)
                                 </label>
                             </div>
@@ -140,13 +144,11 @@ else
                     </div>
                 </div>
             </div>
-
         </div>
 
-        <!-- ── Right Column ────────────────────────────── -->
+        <!-- Right Column -->
         <div class="col-lg-4">
 
-            <!-- AI Analysis -->
             <div class="card border-0 shadow-sm mb-3">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between mb-3">
@@ -172,10 +174,12 @@ else
                         <div class="mb-3">
                             <div class="d-flex justify-content-between small mb-1">
                                 <span>Sentiment</span>
-                                <span class="@SentimentClass fw-semibold">@SentimentLabel</span>
+                                <span class="@SentimentClass fw-semibold">
+                                    @SentimentLabel
+                                </span>
                             </div>
                             <div class="progress" style="height:6px;">
-                                <div class="progress-bar @SentimentBarClass"
+                                <div class="progress-bar @SentimentBar"
                                      style="width:@SentimentPct%"></div>
                             </div>
                         </div>
@@ -183,43 +187,40 @@ else
                         <div class="mb-3">
                             <div class="d-flex justify-content-between small mb-1">
                                 <span>Urgency</span>
-                                <span class="@UrgencyClass fw-semibold">@UrgencyLabel</span>
+                                <span class="@UrgencyClass fw-semibold">
+                                    @UrgencyLabel
+                                </span>
                             </div>
                             <div class="progress" style="height:6px;">
-                                <div class="progress-bar @UrgencyBarClass"
+                                <div class="progress-bar @UrgencyBar"
                                      style="width:@UrgencyPct%"></div>
                             </div>
                         </div>
 
                         @if (!string.IsNullOrEmpty(_ticket.SuggestedTags))
                         {
-                            <div>
-                                <p class="text-muted small mb-1">Suggested Tags</p>
-                                @foreach (var tag in _ticket.SuggestedTags
-                                                    .Split(',', StringSplitOptions.RemoveEmptyEntries))
-                                {
-                                    <span class="badge bg-light text-dark border me-1 mb-1">
-                                        @tag.Trim()
-                                    </span>
-                                }
-                            </div>
+                            <p class="text-muted small mb-1">Tags</p>
+                            @foreach (var tag in _ticket.SuggestedTags
+                                .Split(',', StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                <span class="badge bg-light text-dark border me-1 mb-1">
+                                    @tag.Trim()
+                                </span>
+                            }
                         }
                     }
                     else
                     {
                         <p class="text-muted small mb-0">
-                            Analysis is running in the background.
-                            The page will update automatically.
+                            Running in the background — page updates automatically.
                         </p>
                     }
                 </div>
             </div>
 
-            <!-- Details -->
             <div class="card border-0 shadow-sm mb-3">
                 <div class="card-body">
                     <h6 class="fw-bold mb-3">Details</h6>
-
                     <MetaRow Label="Category"
                              Value="@_ticket.Category" />
                     <MetaRow Label="Assigned To"
@@ -228,9 +229,10 @@ else
                     @if (_ticket.SLADeadline.HasValue)
                     {
                         <div class="d-flex justify-content-between align-items-center
-                                            py-2 border-bottom">
+                                    py-2 border-bottom">
                             <span class="text-muted small">SLA Deadline</span>
-                            <span class="small @(_ticket.SlaBreached ? "text-danger fw-bold" : "")">
+                            <span class="small @(_ticket.SlaBreached
+                                ? "text-danger fw-bold" : "")">
                                 @_ticket.SLADeadline.Value.ToString("MMM dd HH:mm")
                                 @if (_ticket.SlaBreached)
                                 {
@@ -242,7 +244,7 @@ else
 
                     @if (_ticket.ResolvedAt.HasValue)
                     {
-                        <MetaRow Label="Resolved At"
+                        <MetaRow Label="Resolved"
                                  Value="@_ticket.ResolvedAt.Value.ToString("MMM dd HH:mm")" />
                     }
 
@@ -270,11 +272,10 @@ else
                 </div>
             </div>
 
-            <!-- Audit Log -->
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <h6 class="fw-bold mb-3">
-                        <i class="bi bi-clock-history me-2 text-muted"></i>Activity Log
+                        <i class="bi bi-clock-history me-2 text-muted"></i>Activity
                     </h6>
                     @if (!_ticket.AuditLogs.Any())
                     {
@@ -283,10 +284,10 @@ else
                     @foreach (var log in _ticket.AuditLogs.Take(10))
                     {
                         <div class="d-flex gap-2 mb-2">
-                            <div class="text-muted"
-                                 style="font-size:10px;white-space:nowrap;padding-top:2px;">
+                            <span class="text-muted"
+                                  style="font-size:10px; white-space:nowrap; padding-top:2px;">
                                 @log.Timestamp.ToString("MMM dd HH:mm")
-                            </div>
+                            </span>
                             <div style="font-size:12px;">
                                 <span class="badge bg-light text-dark border me-1">
                                     @log.Action
@@ -306,70 +307,66 @@ else
 }
 
 @code {
-    [Parameter]
-    public Guid Id { get; set; }
+    [Parameter] public Guid Id { get; set; }
 
-    // *** KEY FIX: type is now TicketDetailDto, not TicketDetail ***
-    private TicketDetailDto? _ticket = null;
-    private bool _loading = true;
-    private string _replyContent = string.Empty;
-    private bool _isInternalNote = false;
-    private bool _sending = false;
-    private string _replyError = string.Empty;
-    private int _newStatus = 2;
+    private TicketDetailDto? _ticket       = null;
+    private bool             _loading      = true;
+    private string           _replyContent = string.Empty;
+    private bool             _isInternal   = false;
+    private bool             _sending      = false;
+    private string           _replyError   = string.Empty;
+    private int              _newStatus    = 2;
 
-    // ── AI score helpers ──────────────────────────────────────────────────────
     private double Sentiment => _ticket?.SentimentScore ?? 0.5;
-    private double Urgency => _ticket?.UrgencyScore ?? 0.5;
+    private double Urgency   => _ticket?.UrgencyScore   ?? 0.5;
 
     private string SentimentLabel => Sentiment < 0.3 ? "Negative"
-                                      : Sentiment < 0.6 ? "Neutral" : "Positive";
+                                   : Sentiment < 0.6 ? "Neutral" : "Positive";
     private string SentimentClass => Sentiment < 0.3 ? "text-danger"
-                                      : Sentiment < 0.6 ? "text-muted" : "text-success";
-    private string SentimentBarClass => Sentiment < 0.3 ? "bg-danger"
-                                      : Sentiment < 0.6 ? "bg-warning" : "bg-success";
-    private string SentimentPct => ((int)(Sentiment * 100)).ToString();
+                                   : Sentiment < 0.6 ? "text-muted" : "text-success";
+    private string SentimentBar   => Sentiment < 0.3 ? "bg-danger"
+                                   : Sentiment < 0.6 ? "bg-warning" : "bg-success";
+    private string SentimentPct   => ((int)(Sentiment * 100)).ToString();
 
-    private string UrgencyLabel => Urgency > 0.85 ? "Critical"
-                                      : Urgency > 0.65 ? "High"
-                                      : Urgency > 0.40 ? "Medium" : "Low";
-    private string UrgencyClass => Urgency > 0.65 ? "text-danger"
-                                      : Urgency > 0.40 ? "text-warning" : "text-muted";
-    private string UrgencyBarClass => Urgency > 0.65 ? "bg-danger"
-                                      : Urgency > 0.40 ? "bg-warning" : "bg-success";
-    private string UrgencyPct => ((int)(Urgency * 100)).ToString();
+    private string UrgencyLabel   => Urgency > 0.85 ? "Critical"
+                                   : Urgency > 0.65 ? "High"
+                                   : Urgency > 0.40 ? "Medium" : "Low";
+    private string UrgencyClass   => Urgency > 0.65 ? "text-danger"
+                                   : Urgency > 0.40 ? "text-warning" : "text-muted";
+    private string UrgencyBar     => Urgency > 0.65 ? "bg-danger"
+                                   : Urgency > 0.40 ? "bg-warning" : "bg-success";
+    private string UrgencyPct     => ((int)(Urgency * 100)).ToString();
 
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
     protected override async Task OnInitializedAsync()
     {
-        SignalR.OnTicketUpdated += OnTicketUpdated;
-        SignalR.OnNewMessage += OnNewMessage;
-        await LoadTicketAsync();
+        SignalR.OnTicketUpdated += OnUpdated;
+        SignalR.OnNewMessage    += OnNewMsg;
+        await LoadAsync();
     }
 
-    private async void OnTicketUpdated(string id)
+    private async void OnUpdated(string id)
     {
         if (id == Id.ToString())
         {
-            await LoadTicketAsync();
+            await LoadAsync();
             await InvokeAsync(StateHasChanged);
         }
     }
 
-    private async void OnNewMessage(string id)
+    private async void OnNewMsg(string id)
     {
         if (id == Id.ToString())
         {
-            await LoadTicketAsync();
+            await LoadAsync();
             await InvokeAsync(StateHasChanged);
         }
     }
 
-    private async Task LoadTicketAsync()
+    private async Task LoadAsync()
     {
         _loading = true;
         StateHasChanged();
-        _ticket = await TicketApi.GetTicketAsync(Id);
+        _ticket  = await TicketApi.GetTicketAsync(Id);
         _loading = false;
     }
 
@@ -379,19 +376,19 @@ else
         if (string.IsNullOrWhiteSpace(_replyContent)) return;
 
         _sending = true;
-        var (msg, error) = await TicketApi.AddMessageAsync(
-            Id, _replyContent, _isInternalNote);
+        var (msg, err) = await TicketApi.AddMessageAsync(
+            Id, _replyContent, _isInternal);
         _sending = false;
 
         if (msg != null)
         {
             _ticket?.Messages.Add(msg);
             _replyContent = string.Empty;
-            _isInternalNote = false;
+            _isInternal   = false;
         }
         else
         {
-            _replyError = error ?? "Failed to send message.";
+            _replyError = err ?? "Failed to send message.";
         }
     }
 

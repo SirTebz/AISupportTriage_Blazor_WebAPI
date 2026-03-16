@@ -42,11 +42,11 @@
                         Subject / Title <span class="text-danger">*</span>
                     </label>
                     <input class="form-control"
-                           @bind="_model.Title"
+                           @bind="_title"
                            @bind:event="oninput"
                            placeholder="Brief description of your issue"
                            maxlength="200" />
-                    <div class="form-text">@_model.Title.Length / 200</div>
+                    <div class="form-text">@_title.Length / 200</div>
                 </div>
 
                 <div class="mb-4">
@@ -55,11 +55,11 @@
                     </label>
                     <textarea class="form-control"
                               rows="7"
-                              @bind="_model.Description"
+                              @bind="_description"
                               @bind:event="oninput"
-                              placeholder="Describe your issue in detail — include error messages, steps to reproduce, and what you expected."
+                              placeholder="Describe your issue in detail — include error messages, steps to reproduce, and expected behaviour."
                               maxlength="5000"></textarea>
-                    <div class="form-text">@_model.Description.Length / 5000</div>
+                    <div class="form-text">@_description.Length / 5000</div>
                 </div>
 
                 <div class="d-flex align-items-center gap-3 p-3 rounded-3 bg-light mb-4">
@@ -67,8 +67,9 @@
                     <div>
                         <div class="fw-semibold small">AI-Powered Triage</div>
                         <div class="text-muted" style="font-size:12px;">
-                            AI will analyse sentiment, classify the category, detect urgency,
-                            and auto-assign the best available agent — all asynchronously.
+                            AI will analyse sentiment, classify the category,
+                            detect urgency, and auto-assign the best agent — all
+                            asynchronously in the background.
                         </div>
                     </div>
                 </div>
@@ -98,7 +99,8 @@
 </div>
 
 @code {
-    private readonly CreateTicketRequest _model = new();
+    private string _title = string.Empty;
+    private string _description = string.Empty;
     private string _error = string.Empty;
     private bool _submitting = false;
     private bool _success = false;
@@ -107,12 +109,12 @@
     {
         _error = string.Empty;
 
-        if (string.IsNullOrWhiteSpace(_model.Title) || _model.Title.Trim().Length < 5)
+        if (_title.Trim().Length < 5)
         {
             _error = "Title must be at least 5 characters.";
             return;
         }
-        if (string.IsNullOrWhiteSpace(_model.Description) || _model.Description.Trim().Length < 10)
+        if (_description.Trim().Length < 10)
         {
             _error = "Description must be at least 10 characters.";
             return;
@@ -120,8 +122,13 @@
 
         _submitting = true;
 
-        // Return type is now TicketDetailDto
-        var (ticket, error) = await TicketApi.CreateTicketAsync(_model);
+        var req = new CreateTicketRequest
+        {
+            Title = _title.Trim(),
+            Description = _description.Trim()
+        };
+
+        var (ticket, error) = await TicketApi.CreateTicketAsync(req);
 
         _submitting = false;
 
@@ -134,7 +141,7 @@
         }
         else
         {
-            _error = error ?? "Failed to submit ticket. Please try again.";
+            _error = error ?? "Failed to submit ticket.";
         }
     }
 }

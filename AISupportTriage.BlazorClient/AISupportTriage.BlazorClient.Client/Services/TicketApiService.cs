@@ -1,14 +1,14 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
-using AISupportTriage.BlazorClient.Models;
+using AISupportTriage.BlazorClient.Client.Models;
 
-namespace AISupportTriage.BlazorClient.Services;
+namespace AISupportTriage.BlazorClient.Client.Services;
 
 public class TicketApiService
 {
     private readonly HttpClient _http;
 
-    private static readonly JsonSerializerOptions JsonOpts =
+    private static readonly JsonSerializerOptions Opts =
         new() { PropertyNameCaseInsensitive = true };
 
     public TicketApiService(HttpClient http)
@@ -20,9 +20,9 @@ public class TicketApiService
     {
         try
         {
-            var result = await _http.GetFromJsonAsync<List<TicketListItem>>(
-                "api/tickets", JsonOpts);
-            return result ?? new List<TicketListItem>();
+            return await _http.GetFromJsonAsync<List<TicketListItem>>(
+                       "api/tickets", Opts)
+                   ?? new List<TicketListItem>();
         }
         catch { return new List<TicketListItem>(); }
     }
@@ -32,7 +32,7 @@ public class TicketApiService
         try
         {
             return await _http.GetFromJsonAsync<TicketDetailDto>(
-                $"api/tickets/{id}", JsonOpts);
+                $"api/tickets/{id}", Opts);
         }
         catch { return null; }
     }
@@ -42,13 +42,11 @@ public class TicketApiService
     {
         try
         {
-            var response = await _http.PostAsJsonAsync("api/tickets", req);
-            if (!response.IsSuccessStatusCode)
-                return (null, await ReadErrorAsync(response));
+            var res = await _http.PostAsJsonAsync("api/tickets", req);
+            if (!res.IsSuccessStatusCode)
+                return (null, await ReadErrorAsync(res));
 
-            var ticket = await response.Content
-                .ReadFromJsonAsync<TicketDetailDto>(JsonOpts);
-            return (ticket, null);
+            return (await res.Content.ReadFromJsonAsync<TicketDetailDto>(Opts), null);
         }
         catch (Exception ex) { return (null, ex.Message); }
     }
@@ -59,13 +57,11 @@ public class TicketApiService
         try
         {
             var req = new UpdateStatusRequest { Status = status, Note = note };
-            var response = await _http.PutAsJsonAsync($"api/tickets/{id}/status", req);
-            if (!response.IsSuccessStatusCode)
-                return (null, await ReadErrorAsync(response));
+            var res = await _http.PutAsJsonAsync($"api/tickets/{id}/status", req);
+            if (!res.IsSuccessStatusCode)
+                return (null, await ReadErrorAsync(res));
 
-            var ticket = await response.Content
-                .ReadFromJsonAsync<TicketDetailDto>(JsonOpts);
-            return (ticket, null);
+            return (await res.Content.ReadFromJsonAsync<TicketDetailDto>(Opts), null);
         }
         catch (Exception ex) { return (null, ex.Message); }
     }
@@ -76,13 +72,11 @@ public class TicketApiService
         try
         {
             var req = new AddMessageRequest { Content = content, IsInternal = isInternal };
-            var response = await _http.PostAsJsonAsync($"api/tickets/{id}/messages", req);
-            if (!response.IsSuccessStatusCode)
-                return (null, await ReadErrorAsync(response));
+            var res = await _http.PostAsJsonAsync($"api/tickets/{id}/messages", req);
+            if (!res.IsSuccessStatusCode)
+                return (null, await ReadErrorAsync(res));
 
-            var msg = await response.Content
-                .ReadFromJsonAsync<MessageItem>(JsonOpts);
-            return (msg, null);
+            return (await res.Content.ReadFromJsonAsync<MessageItem>(Opts), null);
         }
         catch (Exception ex) { return (null, ex.Message); }
     }
@@ -92,19 +86,19 @@ public class TicketApiService
         try
         {
             return await _http.GetFromJsonAsync<AnalyticsSummary>(
-                "api/analytics/summary", JsonOpts);
+                "api/analytics/summary", Opts);
         }
         catch { return null; }
     }
 
-    private static async Task<string> ReadErrorAsync(HttpResponseMessage response)
+    private static async Task<string> ReadErrorAsync(HttpResponseMessage res)
     {
         try
         {
-            var err = await response.Content.ReadFromJsonAsync<ApiError>(
+            var err = await res.Content.ReadFromJsonAsync<ApiError>(
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            return err?.Error ?? $"HTTP {(int)response.StatusCode}";
+            return err?.Error ?? $"HTTP {(int)res.StatusCode}";
         }
-        catch { return $"HTTP {(int)response.StatusCode}"; }
+        catch { return $"HTTP {(int)res.StatusCode}"; }
     }
 }
